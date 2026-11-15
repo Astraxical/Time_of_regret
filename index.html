@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Timer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Time Remaining</h1>
+        <div class="countdown" id="countdown">
+            <div class="time-unit">
+                <div class="seven-seg" id="days"></div>
+                <span class="label">Days</span>
+            </div>
+            <div class="separator">:</div>
+            <div class="time-unit">
+                <div class="seven-seg" id="hours"></div>
+                <span class="label">Hours</span>
+            </div>
+            <div class="separator">:</div>
+            <div class="time-unit">
+                <div class="seven-seg" id="minutes"></div>
+                <span class="label">Minutes</span>
+            </div>
+            <div class="separator">:</div>
+            <div class="time-unit">
+                <div class="seven-seg" id="seconds"></div>
+                <span class="label">Seconds</span>
+            </div>
+            <div class="separator">.</div>
+            <div class="time-unit">
+                <div class="seven-seg" id="milliseconds"></div>
+                <span class="label">ms</span>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
