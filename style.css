@@ -8,7 +8,7 @@
     --bg-color: #0a0a0a;
     --panel-bg: #161616;
     --panel-border: #333;
-    --segment-off: #888;
+    --segment-off: #aaa;
     --segment-on: #ff0000;
     --segment-glow: #ff3333;
     --anomaly-color: #ff0000;
@@ -344,10 +344,10 @@ h1 {
 }
 
 .segment.a { top: 7px; left: 7px; width: 34px; height: 9px; border-radius: 5px 5px 0 0; }
-.segment.b { top: 7px; right: 7px; width: 9px; height: 30px; border-radius: 0 5px 0 0; }
-.segment.c { bottom: 7px; right: 7px; width: 9px; height: 30px; border-radius: 0 0 5px 0; }
-.segment.d { bottom: 7px; left: 7px; width: 34px; height: 9px; border-radius: 0 0 5px 5px; }
-.segment.e { bottom: 7px; left: 7px; width: 9px; height: 30px; border-radius: 0 0 0 5px; }
+.segment.b { top: 7px; left: 32px; width: 9px; height: 30px; border-radius: 0 5px 0 0; }
+.segment.c { top: 44px; left: 32px; width: 9px; height: 30px; border-radius: 0 0 5px 0; }
+.segment.d { top: 71px; left: 7px; width: 34px; height: 9px; border-radius: 0 0 5px 5px; }
+.segment.e { top: 44px; left: 7px; width: 9px; height: 30px; border-radius: 0 0 0 5px; }
 .segment.f { top: 7px; left: 7px; width: 9px; height: 30px; border-radius: 5px 0 0 0; }
 .segment.g { top: 37px; left: 7px; width: 34px; height: 9px; }
 
@@ -374,10 +374,11 @@ h1 {
     .separator { font-size: 2rem; }
     h1 { font-size: 1.4rem; letter-spacing: 4px; margin-bottom: 2rem; }
     .container { padding: 2rem 1.5rem; border-radius: 12px; }
-    .segment.a, .segment.d, .segment.g { left: 5px; width: 26px; }
-    .segment.b, .segment.c { right: 5px; }
-    .segment.e, .segment.f { left: 5px; }
-    .segment.a { top: 5px; }
-    .segment.d { bottom: 5px; }
-    .segment.g { top: 28px; }
+    .segment.a { top: 5px; left: 5px; width: 26px; }
+    .segment.b { top: 5px; left: 24px; }
+    .segment.c { top: 33px; left: 24px; }
+    .segment.d { top: 51px; left: 5px; width: 26px; }
+    .segment.e { top: 33px; left: 5px; }
+    .segment.f { top: 5px; left: 5px; }
+    .segment.g { top: 28px; left: 5px; width: 26px; }
 }
