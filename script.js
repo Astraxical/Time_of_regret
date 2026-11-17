@@ -1,5 +1,5 @@
-// Fixed target: 90 days from Nov 13, 2026 22:29 local = Feb 11, 2027 22:29 local
-const targetDate = new Date('2027-02-11T22:29:00');
+// Fixed target: 8 days from Nov 13, 2026 22:29 local = Nov 21, 2026 22:29 local
+const targetDate = new Date('2026-11-21T22:29:00');
 const startDate = new Date('2026-11-13T22:29:00');
 const totalDuration = targetDate - startDate;
 
