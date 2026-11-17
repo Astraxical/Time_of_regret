@@ -14,6 +14,7 @@
     --scanline-sweep-opacity: 0;
     --bg-corruption: 0;
     --inversion: 0;
+    --segment-dim-opacity: 0.15;
 }
 
 body {
@@ -333,7 +334,7 @@ h1 {
     background: #222;
     border-radius: 4px;
     transition: background 0.1s, box-shadow 0.1s, opacity 0.1s;
-    opacity: 0.15;
+    opacity: var(--segment-dim-opacity, 0.15);
 }
 
 .segment.on {

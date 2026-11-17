@@ -118,12 +118,8 @@ function tier1(intensity, container, countdown, allSegments, digits, labels, sep
     // 1. Scanline opacity drift
     countdown.style.setProperty('--scanline-opacity', normIntensity * 0.2);
 
-    // 2. Segment off-color dimming
-    allSegments.forEach(seg => {
-        if (!seg.classList.contains('on')) {
-            seg.style.opacity = 0.15 - normIntensity * 0.1;
-        }
-    });
+    // 2. Segment off-color dimming (use CSS variable to avoid inline style conflicts)
+    document.documentElement.style.setProperty('--segment-dim-opacity', 0.15 - normIntensity * 0.1);
 
     // 3. Random segment micro-flicker
     if (Math.random() < normIntensity * 0.03) {
@@ -282,7 +278,8 @@ function tier5(intensity, container, countdown, allSegments, digits, labels, sep
                 }
             });
         });
-        setTimeout(() => updateCountdown(), 80);
+        // Restore correct display after brief corruption
+        setTimeout(() => updateDisplay(randomUnit, getTimeValue(randomUnit), getDigitCount(randomUnit)), 80);
     }
 
     // 22. Full body inversion flash
@@ -304,6 +301,31 @@ function tier5(intensity, container, countdown, allSegments, digits, labels, sep
     });
 
     // 25. Final system collapse at 0 - handled in updateCountdown when diff <= 0
+}
+
+function getTimeValue(unit) {
+    const now = new Date();
+    const diff = targetDate - now;
+    if (diff <= 0) return 0;
+    switch (unit) {
+        case 'days': return Math.floor(diff / (1000 * 60 * 60 * 24));
+        case 'hours': return Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        case 'minutes': return Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        case 'seconds': return Math.floor((diff % (1000 * 60)) / 1000);
+        case 'milliseconds': return diff % 1000;
+        default: return 0;
+    }
+}
+
+function getDigitCount(unit) {
+    switch (unit) {
+        case 'days': return 3;
+        case 'hours': return 2;
+        case 'minutes': return 2;
+        case 'seconds': return 2;
+        case 'milliseconds': return 3;
+        default: return 2;
+    }
 }
 
 function updateCountdown() {
