@@ -73,7 +73,7 @@ class CountdownTimer {
 
     createDigitHTML() {
         const segments = 'abcdefg'.map(letter =>
-            `<div class="segment" data-seg="${letter}"></div>`
+            `<div class="segment ${letter}" data-seg="${letter}"></div>`
         ).join('');
         return segments;
     }

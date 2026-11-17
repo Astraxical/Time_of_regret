@@ -8,7 +8,7 @@
     --bg-color: #0a0a0a;
     --panel-bg: #161616;
     --panel-border: #333;
-    --segment-off: #555;
+    --segment-off: #888;
     --segment-on: #ff0000;
     --segment-glow: #ff3333;
     --anomaly-color: #ff0000;
@@ -312,6 +312,7 @@ h1 {
     border-radius: 4px;
     transition: background 0.1s, box-shadow 0.1s, opacity 0.1s;
     opacity: 1;
+    border: 1px solid #444;
 }
 
 .segment.on {
@@ -343,12 +344,12 @@ h1 {
 }
 
 .segment.a { top: 7px; left: 7px; width: 34px; height: 9px; border-radius: 5px 5px 0 0; }
-.segment.b { top: 7px; left: 32px; width: 9px; height: calc(50% - 12px); border-radius: 0 5px 0 0; }
-.segment.c { bottom: 7px; left: 32px; width: 9px; height: calc(50% - 12px); border-radius: 0 0 5px 0; }
+.segment.b { top: 7px; right: 7px; width: 9px; height: 30px; border-radius: 0 5px 0 0; }
+.segment.c { bottom: 7px; right: 7px; width: 9px; height: 30px; border-radius: 0 0 5px 0; }
 .segment.d { bottom: 7px; left: 7px; width: 34px; height: 9px; border-radius: 0 0 5px 5px; }
-.segment.e { bottom: 7px; left: 7px; width: 9px; height: calc(50% - 12px); border-radius: 0 0 0 5px; }
-.segment.f { top: 7px; left: 7px; width: 9px; height: calc(50% - 12px); border-radius: 5px 0 0 0; }
-.segment.g { top: calc(50% - 4.5px); left: 7px; width: 34px; height: 9px; }
+.segment.e { bottom: 7px; left: 7px; width: 9px; height: 30px; border-radius: 0 0 0 5px; }
+.segment.f { top: 7px; left: 7px; width: 9px; height: 30px; border-radius: 5px 0 0 0; }
+.segment.g { top: 37px; left: 7px; width: 34px; height: 9px; }
 
 .label {
     font-size: 0.75rem;
@@ -369,13 +370,14 @@ h1 {
     }
     .segment { border-radius: 3px; }
     .segment.a, .segment.d, .segment.g { height: 7px; }
-    .segment.b, .segment.c, .segment.e, .segment.f { width: 7px; }
+    .segment.b, .segment.c, .segment.e, .segment.f { width: 7px; height: 22px; }
     .separator { font-size: 2rem; }
     h1 { font-size: 1.4rem; letter-spacing: 4px; margin-bottom: 2rem; }
     .container { padding: 2rem 1.5rem; border-radius: 12px; }
-.segment.a, .segment.d, .segment.g { left: 5px; width: 26px; }
-.segment.b, .segment.c, .segment.e, .segment.f { top: 5px; }
-.segment.a { top: 5px; }
-.segment.d { bottom: 5px; }
-.segment.g { top: calc(50% - 3.5px); top: 5px; }
+    .segment.a, .segment.d, .segment.g { left: 5px; width: 26px; }
+    .segment.b, .segment.c { right: 5px; }
+    .segment.e, .segment.f { left: 5px; }
+    .segment.a { top: 5px; }
+    .segment.d { bottom: 5px; }
+    .segment.g { top: 28px; }
 }
