@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time of Regret - Preview (10s)</title>
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+:root {
+    --anomaly-color: #ff0000;
+    --anomaly-glow: #ff3333;
+    --scanline-opacity: 0;
+    --bg-color: #0a0a0a;
+    --panel-bg: #111;
+    --panel-border: #222;
+    --corruption: 0;
+}
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background: var(--bg-color);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    overflow: hidden;
+}
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center, #1a1a1a 0%, #0a0a0a 70%);
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.3s, background 0.3s;
+    animation: breathe 8s ease-in-out infinite;
+}
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, transparent 0%, rgba(0, 0, 0, var(--corruption)) 100%);
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.2s;
+}
+@keyframes breathe {
+    0%, 100% { background: radial-gradient(circle at center, #1a1a1a 0%, #0a0a0a 70%); }
+    50% { background: radial-gradient(circle at center, #2a1a1a 0%, #0a0a0a 70%); }
+}
+.container {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 2rem;
+    transition: transform 0.05s ease, box-shadow 0.3s, border-color 0.3s, filter 0.2s;
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    background: var(--panel-bg);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+}
+.container::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    z-index: -1;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--anomaly-color), transparent, var(--anomaly-color));
+    opacity: 0;
+    transition: opacity 0.2s;
+    animation: borderGlow 3s ease-in-out infinite;
+}
+.container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+    pointer-events: none;
+    z-index: 0;
+}
+.container .glitch {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.1s;
+    animation: glitchMove 0.2s infinite;
+    background: linear-gradient(45deg, transparent 45%, rgba(255, 0, 0, 0.15) 45%, rgba(255, 0, 0, 0.15) 55%, transparent 55%);
+    transform: translate3d(0, 0, 0);
+}
+@keyframes glitchMove {
+    0% { transform: translate3d(-2px, 0, 0); }
+    25% { transform: translate3d(2px, 0, 0); }
+    50% { transform: translate3d(-2px, 2px, 0); }
+    75% { transform: translate3d(2px, -2px, 0); }
+    100% { transform: translate3d(0, 0, 0); }
+}
+@keyframes borderGlow {
+    0%, 100% { opacity: 0; transform: scale(1); }
+    50% { opacity: var(--corruption); transform: scale(1.02); }
+}
+.container.static::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.15;
+    pointer-events: none;
+    animation: staticNoise 0.1s infinite;
+    z-index: 1000;
+}
+@keyframes staticNoise {
+    0% { transform: translate(0, 0); }
+    10% { transform: translate(-2px, 1px); }
+    20% { transform: translate(1px, -1px); }
+    30% { transform: translate(2px, 2px); }
+    40% { transform: translate(-1px, 2px); }
+    50% { transform: translate(1px, -2px); }
+    60% { transform: translate(-2px, -1px); }
+    70% { transform: translate(2px, 1px); }
+    80% { transform: translate(-1px, 1px); }
+    90% { transform: translate(1px, 2px); }
+    100% { transform: translate(0, 0); }
+}
+.container.final {
+    animation: finalPulse 0.4s infinite;
+    border-color: var(--anomaly-color);
+    box-shadow: 0 0 40px var(--anomaly-glow);
+}
+@keyframes finalPulse {
+    0%, 100% { filter: hue-rotate(0deg) saturate(1); }
+    50% { filter: hue-rotate(30deg) saturate(2); }
+}
+h1 {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    font-weight: 400;
+    letter-spacing: 4px;
+    color: #333;
+    text-transform: uppercase;
+    transition: color 0.3s, text-shadow 0.3s;
+}
+.countdown {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    position: relative;
+}
+.countdown::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, var(--scanline-opacity)) 2px, rgba(0, 0, 0, var(--scanline-opacity)) 4px);
+    pointer-events: none;
+    animation: scanlineMove 8s linear infinite;
+}
+@keyframes scanlineMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100px; }
+}
+.time-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+.separator {
+    font-size: 3rem;
+    color: var(--anomaly-color);
+    animation: blink 1s infinite;
+    line-height: 1;
+    margin: 0 0.5rem;
+    text-shadow: 0 0 10px var(--anomaly-glow), 0 0 20px var(--anomaly-glow);
+    transition: color 0.3s, text-shadow 0.3s;
+}
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+.seven-seg {
+    display: flex;
+    gap: 2px;
+}
+.digit {
+    position: relative;
+    width: 50px;
+    height: 90px;
+    background: var(--panel-bg);
+    border-radius: 8px;
+    padding: 6px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.5);
+    transition: transform 0.1s ease, box-shadow 0.3s, border-color 0.3s;
+    border: 1px solid var(--panel-border);
+}
+.digit::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.2s, box-shadow 0.2s;
+}
+.digit.on-glow::after {
+    opacity: 0.6;
+    box-shadow: 0 0 15px var(--anomaly-glow), 0 0 30px var(--anomaly-glow);
+}
+.segment {
+    position: absolute;
+    background: #222;
+    border-radius: 4px;
+    transition: background 0.1s, box-shadow 0.1s, opacity 0.1s;
+    opacity: 0.15;
+}
+.segment.on {
+    background: var(--anomaly-color);
+    opacity: 1;
+    box-shadow: 0 0 10px var(--anomaly-glow), 0 0 20px var(--anomaly-glow), inset 0 0 10px var(--anomaly-glow);
+}
+.segment.ghost {
+    animation: ghostFlash 0.2s ease-out;
+}
+@keyframes ghostFlash {
+    0% {
+        background: var(--anomaly-color);
+        opacity: 1;
+        box-shadow: 0 0 20px var(--anomaly-glow), 0 0 40px var(--anomaly-glow);
+    }
+    100% {
+        background: #222;
+        opacity: 0.15;
+        box-shadow: none;
+    }
+}
+.segment.a { top: 6px; left: 6px; right: 6px; height: 8px; border-radius: 4px 4px 0 0; }
+.segment.b { top: 6px; right: 6px; width: 8px; height: calc(50% - 10px); border-radius: 0 4px 0 0; }
+.segment.c { bottom: 6px; right: 6px; width: 8px; height: calc(50% - 10px); border-radius: 0 0 4px 0; }
+.segment.d { bottom: 6px; left: 6px; right: 6px; height: 8px; border-radius: 0 0 4px 4px; }
+.segment.e { bottom: 6px; left: 6px; width: 8px; height: calc(50% - 10px); border-radius: 0 0 0 4px; }
+.segment.f { top: 6px; left: 6px; width: 8px; height: calc(50% - 10px); border-radius: 4px 0 0 0; }
+.segment.g { top: calc(50% - 4px); left: 6px; right: 6px; height: 8px; }
+.label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #444;
+    font-weight: 600;
+    transition: color 0.3s, text-shadow 0.3s;
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+}
+@media (max-width: 600px) {
+    .digit {
+        width: 38px;
+        height: 68px;
+        padding: 4px;
+    }
+    .segment { border-radius: 2px; }
+    .segment.a, .segment.d, .segment.g { height: 6px; }
+    .segment.b, .segment.c, .segment.e, .segment.f { width: 6px; }
+    .separator { font-size: 2rem; }
+    h1 { font-size: 1.2rem; }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="glitch"></div>
+        <h1>Preview: 10 Seconds</h1>
+        <div class="countdown" id="countdown">
+            <div class="time-unit">
+                <div class="seven-seg" id="seconds"></div>
+                <span class="label">seconds</span>
+            </div>
+        </div>
+    </div>
+    <script>
+// Preview: 10-second countdown from now
+const TARGET_DATE = new Date(Date.now() + 10000);
+const TOTAL_DURATION = 10000;
+
+const SEGMENTS = {
+    0: ['a', 'b', 'c', 'd', 'e', 'f'],
+    1: ['b', 'c'],
+    2: ['a', 'b', 'g', 'e', 'd'],
+    3: ['a', 'b', 'g', 'c', 'd'],
+    4: ['f', 'g', 'b', 'c'],
+    5: ['a', 'f', 'g', 'c', 'd'],
+    6: ['a', 'f', 'g', 'e', 'c', 'd'],
+    7: ['a', 'b', 'c'],
+    8: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+    9: ['a', 'b', 'c', 'd', 'f', 'g']
+};
+
+function createDigit() {
+    return `
+        <div class="segment" data-seg="a"></div>
+        <div class="segment" data-seg="b"></div>
+        <div class="segment" data-seg="c"></div>
+        <div class="segment" data-seg="d"></div>
+        <div class="segment" data-seg="e"></div>
+        <div class="segment" data-seg="f"></div>
+        <div class="segment" data-seg="g"></div>
+    `;
+}
+
+function initDisplay(id, digitCount) {
+    const el = document.getElementById(id);
+    el.innerHTML = '';
+    el.classList.add('seven-seg');
+    for (let i = 0; i < digitCount; i++) {
+        const digit = document.createElement('div');
+        digit.className = 'digit';
+        digit.innerHTML = createDigit();
+        el.appendChild(digit);
+    }
+}
+
+function setSegments(digit, num) {
+    const active = new Set(SEGMENTS[num]);
+    let anyOn = false;
+    digit.querySelectorAll('.segment').forEach(seg => {
+        if (active.has(seg.dataset.seg)) {
+            seg.classList.add('on');
+            anyOn = true;
+        } else {
+            seg.classList.remove('on');
+        }
+    });
+    digit.classList.toggle('on-glow', anyOn);
+}
+
+function updateDisplay(id, value, digitCount) {
+    const el = document.getElementById(id);
+    const digits = el.querySelectorAll('.digit');
+    const str = String(value).padStart(digitCount, '0');
+    digits.forEach((digit, i) => {
+        setSegments(digit, parseInt(str[i], 10));
+    });
+}
+
+initDisplay('seconds', 2);
+
+function getAnomalyIntensity(diff) {
+    const progress = 1 - diff / TOTAL_DURATION;
+    return Math.max(0, Math.min(1, progress));
+}
+
+function applyAnomalies(intensity) {
+    if (intensity <= 0) return;
+
+    const container = document.querySelector('.container');
+    const countdown = document.getElementById('countdown');
+    const allSegments = document.querySelectorAll('.segment');
+    const digits = document.querySelectorAll('.digit');
+
+    const hueShift = intensity * 30;
+    const lightness = 50 - intensity * 20;
+    document.documentElement.style.setProperty('--anomaly-color', `hsl(${hueShift}, 100%, ${lightness}%)`);
+    document.documentElement.style.setProperty('--anomaly-glow', `hsl(${hueShift}, 100%, ${lightness + 20}%)`);
+    document.documentElement.style.setProperty('--corruption', intensity);
+
+    document.querySelectorAll('.label').forEach(label => {
+        label.style.color = `hsl(${hueShift}, 100%, ${40 + intensity * 20}%)`;
+    });
+
+    if (intensity > 0.3 && Math.random() < intensity * 0.1) {
+        const shakeX = (Math.random() - 0.5) * intensity * 20;
+        const shakeY = (Math.random() - 0.5) * intensity * 10;
+        container.style.transform = `translate(${shakeX}px, ${shakeY}px)`;
+        setTimeout(() => { container.style.transform = ''; }, 50);
+    }
+
+    allSegments.forEach(seg => {
+        if (Math.random() < intensity * 0.02) {
+            const wasOn = seg.classList.contains('on');
+            seg.classList.toggle('on');
+            setTimeout(() => {
+                if (wasOn) seg.classList.add('on');
+                else seg.classList.remove('on');
+            }, Math.random() * 100 + 50);
+        }
+    });
+
+    if (intensity > 0.5 && Math.random() < intensity * 0.05) {
+        const randomSeg = allSegments[Math.floor(Math.random() * allSegments.length)];
+        randomSeg.classList.add('ghost');
+        setTimeout(() => randomSeg.classList.remove('ghost'), Math.random() * 200 + 100);
+    }
+
+    if (intensity > 0.6) {
+        digits.forEach(digit => {
+            if (Math.random() < intensity * 0.03) {
+                const offsetX = (Math.random() - 0.5) * intensity * 8;
+                const offsetY = (Math.random() - 0.5) * intensity * 4;
+                digit.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+                setTimeout(() => { digit.style.transform = ''; }, 100);
+            }
+        });
+    }
+
+    const glitch = document.querySelector('.glitch');
+    glitch.style.opacity = intensity > 0.2 ? intensity * 0.5 : 0;
+
+    countdown.style.setProperty('--scanline-opacity', intensity > 0.4 ? intensity * 0.3 : 0);
+
+    if (intensity > 0.7 && Math.random() < intensity * 0.1) {
+        container.classList.add('static');
+        setTimeout(() => container.classList.remove('static'), 50);
+    }
+
+    if (intensity > 0.8 && Math.random() < intensity * 0.03) {
+        const el = document.getElementById('seconds');
+        el.querySelectorAll('.digit').forEach(d => {
+            setSegments(d, Math.floor(Math.random() * 10));
+        });
+    }
+}
+
+function updateCountdown() {
+    const now = Date.now();
+    const diff = TARGET_DATE - now;
+
+    if (diff <= 0) {
+        document.getElementById('countdown').innerHTML = '<p style="font-size: 2rem; color: var(--anomaly-color);">Time\'s up!</p>';
+        document.querySelector('.container').classList.add('final');
+        return;
+    }
+
+    const seconds = Math.floor(diff / 1000);
+    const milliseconds = diff % 1000;
+    updateDisplay('seconds', seconds, 2);
+    applyAnomalies(getAnomalyIntensity(diff));
+}
+
+let rafId;
+function loop() {
+    updateCountdown();
+    rafId = requestAnimationFrame(loop);
+}
+
+loop();
+
+window.addEventListener('pagehide', () => cancelAnimationFrame(rafId));
+    </script>
+</body>
+</html>
