@@ -96,7 +96,7 @@ body::after {
         rgba(255, 255, 255, 0)
     );
     pointer-events: none;
-    z-index: 0;
+    z-index: -1;
 }
 
 .container .glitch {
@@ -291,10 +291,12 @@ h1 {
     background: #222;
     border-radius: 4px;
     transition: background 0.1s, box-shadow 0.1s, opacity 0.1s;
-    opacity: 0.15;
+    opacity: 0.3;
 }
 
 .segment.on {
+    position: relative;
+    z-index: 2;
     background: var(--anomaly-color);
     opacity: 1;
     box-shadow: 0 0 10px var(--anomaly-glow), 0 0 20px var(--anomaly-glow), inset 0 0 10px var(--anomaly-glow);
