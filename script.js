@@ -134,16 +134,43 @@ function applyAnomalies(intensity) {
         setTimeout(() => randomSeg.classList.remove('ghost'), Math.random() * 200 + 100);
     }
 
-    // Digit displacement
+    // Digit displacement + rotation
     if (intensity > ANOMALY_THRESHOLDS.displacement) {
         digits.forEach(digit => {
-            if (Math.random() < intensity * 0.03) {
-                const offsetX = (Math.random() - 0.5) * intensity * 8;
-                const offsetY = (Math.random() - 0.5) * intensity * 4;
-                digit.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-                setTimeout(() => { digit.style.transform = ''; }, 100);
+            if (Math.random() < intensity * 0.05) {
+                const offsetX = (Math.random() - 0.5) * intensity * 10;
+                const offsetY = (Math.random() - 0.5) * intensity * 5;
+                const rot = (Math.random() - 0.5) * intensity * 4;
+                digit.classList.add('digit-rotate');
+                digit.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${rot}deg)`;
+                setTimeout(() => {
+                    digit.classList.remove('digit-rotate');
+                    digit.style.transform = '';
+                }, 80);
             }
         });
+    }
+
+    // Label jitter - labels shake as anomaly grows
+    if (intensity > 0.5) {
+        document.querySelectorAll('.label').forEach(label => {
+            if (Math.random() < intensity * 0.1) {
+                label.classList.add('label-jitter');
+                setTimeout(() => label.classList.remove('label-jitter'), 60);
+            }
+        });
+    }
+
+    // Container blur - vision blurs under high anomaly
+    if (intensity > ANOMALY_THRESHOLDS.static) {
+        container.style.filter = `blur(${intensity * 2}px)`;
+        setTimeout(() => { container.style.filter = ''; }, 60);
+    }
+
+    // Body contrast flash - brief inversion/contrast spike at peak anomaly
+    if (intensity > 0.75 && Math.random() < intensity * 0.05) {
+        document.body.classList.add('body-contrast');
+        setTimeout(() => document.body.classList.remove('body-contrast'), 40);
     }
 
     // Chromatic aberration glitch overlay

@@ -28,6 +28,15 @@ body {
     align-items: center;
     color: #fff;
     overflow: hidden;
+    transition: filter 0.1s, background 0.3s;
+}
+
+.body-contrast {
+    filter: contrast(2) brightness(1.4) saturate(1.5);
+}
+
+.body-blur {
+    filter: blur(2px) brightness(0.7);
 }
 body::before {
     content: '';
@@ -142,6 +151,24 @@ body::after {
 @keyframes finalPulse {
     0%, 100% { filter: hue-rotate(0deg) saturate(1); }
     50% { filter: hue-rotate(30deg) saturate(2); }
+}
+.label-jitter {
+    animation: labelJitter 0.1s infinite;
+}
+@keyframes labelJitter {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(-1px, 1px) rotate(1deg); }
+    50% { transform: translate(1px, -1px) rotate(-1deg); }
+    75% { transform: translate(-1px, -1px) rotate(0.5deg); }
+}
+.digit-rotate {
+    animation: digitRotate 0.1s infinite;
+}
+@keyframes digitRotate {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(1deg); }
+    50% { transform: rotate(-1deg); }
+    75% { transform: rotate(0.5deg); }
 }
 h1 {
     font-size: 1.5rem;
@@ -433,16 +460,43 @@ function applyAnomalies(intensity) {
         setTimeout(() => randomSeg.classList.remove('ghost'), Math.random() * 150 + 60);
     }
 
-    // Digit displacement
+    // Digit displacement + rotation
     if (intensity > 0.5) {
         digits.forEach(digit => {
             if (Math.random() < intensity * 0.05) {
                 const offsetX = (Math.random() - 0.5) * intensity * 10;
                 const offsetY = (Math.random() - 0.5) * intensity * 5;
-                digit.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-                setTimeout(() => { digit.style.transform = ''; }, 80);
+                const rot = (Math.random() - 0.5) * intensity * 4;
+                digit.classList.add('digit-rotate');
+                digit.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${rot}deg)`;
+                setTimeout(() => {
+                    digit.classList.remove('digit-rotate');
+                    digit.style.transform = '';
+                }, 80);
             }
         });
+    }
+
+    // Label jitter - labels shake as anomaly grows
+    if (intensity > 0.5) {
+        document.querySelectorAll('.label').forEach(label => {
+            if (Math.random() < intensity * 0.1) {
+                label.classList.add('label-jitter');
+                setTimeout(() => label.classList.remove('label-jitter'), 60);
+            }
+        });
+    }
+
+    // Container blur - vision blurs under high anomaly
+    if (intensity > 0.6) {
+        container.style.filter = `blur(${intensity * 2}px)`;
+        setTimeout(() => { container.style.filter = ''; }, 60);
+    }
+
+    // Body contrast flash - brief inversion/contrast spike at peak anomaly
+    if (intensity > 0.75 && Math.random() < intensity * 0.05) {
+        document.body.classList.add('body-contrast');
+        setTimeout(() => document.body.classList.remove('body-contrast'), 40);
     }
 
     // Chromatic aberration glitch overlay
