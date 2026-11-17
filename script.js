@@ -1,9 +1,12 @@
-// Fixed target: 90 days from Nov 13, 2026 22:29 local = Feb 11, 2027 22:29 local
+// Countdown Timer with anomaly effects
+// Target: 90 days from Nov 13, 2026 22:29 local = Feb 11, 2027 22:29 local
+
 const TARGET_DATE = new Date('2027-02-11T22:29:00');
 const START_DATE = new Date('2026-11-13T22:29:00');
 const TOTAL_DURATION = TARGET_DATE - START_DATE;
 
-const SEGMENTS = {
+// Seven-segment digit map: which segments light up for each digit 0-9
+const SEGMENT_MAP = {
     0: ['a', 'b', 'c', 'd', 'e', 'f'],
     1: ['b', 'c'],
     2: ['a', 'b', 'g', 'e', 'd'],
@@ -16,223 +19,261 @@ const SEGMENTS = {
     9: ['a', 'b', 'c', 'd', 'f', 'g']
 };
 
-const UNITS = [
-    { id: 'days', digitCount: 3 },
-    { id: 'hours', digitCount: 2 },
-    { id: 'minutes', digitCount: 2 },
-    { id: 'seconds', digitCount: 2 },
-    { id: 'milliseconds', digitCount: 3 },
+const TIME_UNITS = [
+    { id: 'days', digitCount: 3, maxDigits: 3 },
+    { id: 'hours', digitCount: 2, maxDigits: 2 },
+    { id: 'minutes', digitCount: 2, maxDigits: 2 },
+    { id: 'seconds', digitCount: 2, maxDigits: 2 },
+    { id: 'milliseconds', digitCount: 3, maxDigits: 3 }
 ];
 
-const ANOMALY_THRESHOLDS = {
+// Anomaly intensity thresholds (0 to 1, higher = closer to target)
+const ANOMALY = {
     shake: 0.3,
     scanline: 0.4,
     ghost: 0.5,
     displacement: 0.6,
     static: 0.7,
-    dilation: 0.8,
+    dilation: 0.8
 };
 
-function createDigit() {
-    return `
-        <div class="segment" data-seg="a"></div>
-        <div class="segment" data-seg="b"></div>
-        <div class="segment" data-seg="c"></div>
-        <div class="segment" data-seg="d"></div>
-        <div class="segment" data-seg="e"></div>
-        <div class="segment" data-seg="f"></div>
-        <div class="segment" data-seg="g"></div>
-    `;
-}
-
-function initDisplay(id, digitCount) {
-    const el = document.getElementById(id);
-    el.innerHTML = '';
-    el.classList.add('seven-seg');
-    for (let i = 0; i < digitCount; i++) {
-        const digit = document.createElement('div');
-        digit.className = 'digit';
-        digit.innerHTML = createDigit();
-        el.appendChild(digit);
+class CountdownTimer {
+    constructor() {
+        this.rafId = null;
+        this.isRunning = true;
+        this.initDOM();
+        this.initStyles();
+        this.start();
     }
-}
 
-function setSegments(digit, num) {
-    const active = new Set(SEGMENTS[num]);
-    let anyOn = false;
-    digit.querySelectorAll('.segment').forEach(seg => {
-        if (active.has(seg.dataset.seg)) {
-            seg.classList.add('on');
-            anyOn = true;
-        } else {
-            seg.classList.remove('on');
+    initDOM() {
+        this.container = document.querySelector('.container');
+        this.countdown = document.getElementById('countdown');
+        this.glitch = document.querySelector('.glitch');
+
+        TIME_UNITS.forEach(unit => {
+            const el = document.getElementById(unit.id);
+            el.innerHTML = '';
+            el.classList.add('seven-seg');
+            for (let i = 0; i < unit.digitCount; i++) {
+                const digit = document.createElement('div');
+                digit.className = 'digit';
+                digit.innerHTML = this.createDigitHTML();
+                el.appendChild(digit);
+            }
+        });
+    }
+
+    initStyles() {
+        document.documentElement.style.setProperty('--anomaly-color', '#ff0000');
+        document.documentElement.style.setProperty('--anomaly-glow', '#ff3333');
+        document.documentElement.style.setProperty('--scanline-opacity', '0');
+        document.documentElement.style.setProperty('--corruption', '0');
+    }
+
+    createDigitHTML() {
+        const segments = 'abcdefg'.map(letter =>
+            `<div class="segment" data-seg="${letter}"></div>`
+        ).join('');
+        return segments;
+    }
+
+    setSegments(digitEl, num) {
+        const active = new Set(SEGMENT_MAP[num]);
+        let anyOn = false;
+
+        digitEl.querySelectorAll('.segment').forEach(seg => {
+            if (active.has(seg.dataset.seg)) {
+                seg.classList.add('on');
+                anyOn = true;
+            } else {
+                seg.classList.remove('on');
+            }
+        });
+
+        digitEl.classList.toggle('on-glow', anyOn);
+    }
+
+    updateDisplay(id, value, digitCount) {
+        const el = document.getElementById(id);
+        const digits = el.querySelectorAll('.digit');
+        const str = String(value).padStart(digitCount, '0');
+
+        digits.forEach((digit, i) => {
+            this.setSegments(digit, parseInt(str[i], 10));
+        });
+    }
+
+    getAnomalyIntensity(diff) {
+        const progress = 1 - diff / TOTAL_DURATION;
+        return Math.max(0, Math.min(1, progress));
+    }
+
+    applyAnomalies(intensity) {
+        if (intensity <= 0) return;
+
+        const allSegments = document.querySelectorAll('.segment');
+        const digits = document.querySelectorAll('.digit');
+        const labels = document.querySelectorAll('.label');
+
+        // Color shift: red to orange as time runs out
+        const hueShift = intensity * 30;
+        const lightness = 50 - intensity * 20;
+        document.documentElement.style.setProperty(
+            '--anomaly-color', `hsl(${hueShift}, 100%, ${lightness}%)`
+        );
+        document.documentElement.style.setProperty(
+            '--anomaly-glow', `hsl(${hueShift}, 100%, ${lightness + 20}%)`
+        );
+        document.documentElement.style.setProperty('--corruption', intensity);
+
+        labels.forEach(label => {
+            label.style.color = `hsl(${hueShift}, 100%, ${40 + intensity * 20}%)`;
+        });
+
+        // Screen shake
+        if (intensity > ANOMALY.shake && Math.random() < intensity * 0.15) {
+            const shakeX = (Math.random() - 0.5) * intensity * 25;
+            const shakeY = (Math.random() - 0.5) * intensity * 12;
+            this.container.style.transform = `translate(${shakeX}px, ${shakeY}px)`;
+            setTimeout(() => { this.container.style.transform = ''; }, 40);
         }
-    });
-    digit.classList.toggle('on-glow', anyOn);
-}
 
-function updateDisplay(id, value, digitCount) {
-    const el = document.getElementById(id);
-    const digits = el.querySelectorAll('.digit');
-    const str = String(value).padStart(digitCount, '0');
-    digits.forEach((digit, i) => {
-        setSegments(digit, parseInt(str[i], 10));
-    });
-}
-
-UNITS.forEach(({ id, digitCount }) => initDisplay(id, digitCount));
-
-function getAnomalyIntensity(diff) {
-    const progress = 1 - diff / TOTAL_DURATION;
-    return Math.max(0, Math.min(1, progress));
-}
-
-function applyAnomalies(intensity) {
-    if (intensity <= 0) return;
-
-    const container = document.querySelector('.container');
-    const countdown = document.getElementById('countdown');
-    const allSegments = document.querySelectorAll('.segment');
-    const digits = document.querySelectorAll('.digit');
-
-    // Color shift - more intense red/orange as time runs out
-    const hueShift = intensity * 30; // 0 to 30 degrees (red to orange)
-    const lightness = 50 - intensity * 20;
-    document.documentElement.style.setProperty('--anomaly-color', `hsl(${hueShift}, 100%, ${lightness}%)`);
-    document.documentElement.style.setProperty('--anomaly-glow', `hsl(${hueShift}, 100%, ${lightness + 20}%)`);
-    document.documentElement.style.setProperty('--corruption', intensity);
-
-    // Labels shift color with anomaly
-    document.querySelectorAll('.label').forEach(label => {
-        label.style.color = `hsl(${hueShift}, 100%, ${40 + intensity * 20}%)`;
-    });
-
-    // Screen shake
-    if (intensity > ANOMALY_THRESHOLDS.shake && Math.random() < intensity * 0.1) {
-        const shakeX = (Math.random() - 0.5) * intensity * 20;
-        const shakeY = (Math.random() - 0.5) * intensity * 10;
-        container.style.transform = `translate(${shakeX}px, ${shakeY}px)`;
-        setTimeout(() => { container.style.transform = ''; }, 50);
-    }
-
-    // Random segment flickering (with proper state restore)
-    allSegments.forEach(seg => {
-        if (Math.random() < intensity * 0.02) {
-            const wasOn = seg.classList.contains('on');
-            seg.classList.toggle('on');
-            setTimeout(() => {
-                if (wasOn) seg.classList.add('on');
-                else seg.classList.remove('on');
-            }, Math.random() * 100 + 50);
-        }
-    });
-
-    // Ghost segments - random segments briefly light up
-    if (intensity > ANOMALY_THRESHOLDS.ghost && Math.random() < intensity * 0.05) {
-        const randomSeg = allSegments[Math.floor(Math.random() * allSegments.length)];
-        randomSeg.classList.add('ghost');
-        setTimeout(() => randomSeg.classList.remove('ghost'), Math.random() * 200 + 100);
-    }
-
-    // Digit displacement + rotation
-    if (intensity > ANOMALY_THRESHOLDS.displacement) {
-        digits.forEach(digit => {
-            if (Math.random() < intensity * 0.05) {
-                const offsetX = (Math.random() - 0.5) * intensity * 10;
-                const offsetY = (Math.random() - 0.5) * intensity * 5;
-                const rot = (Math.random() - 0.5) * intensity * 4;
-                digit.classList.add('digit-rotate');
-                digit.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${rot}deg)`;
+        // Random segment flickering (with state restore)
+        allSegments.forEach(seg => {
+            if (Math.random() < intensity * 0.03) {
+                const wasOn = seg.classList.contains('on');
+                seg.classList.toggle('on');
                 setTimeout(() => {
-                    digit.classList.remove('digit-rotate');
-                    digit.style.transform = '';
-                }, 80);
+                    if (wasOn) seg.classList.add('on');
+                    else seg.classList.remove('on');
+                }, Math.random() * 80 + 30);
             }
         });
+
+        // Ghost segments
+        if (intensity > ANOMALY.ghost && Math.random() < intensity * 0.08) {
+            const randomSeg = allSegments[Math.floor(Math.random() * allSegments.length)];
+            randomSeg.classList.add('ghost');
+            setTimeout(() => randomSeg.classList.remove('ghost'), Math.random() * 150 + 60);
+        }
+
+        // Digit displacement + rotation
+        if (intensity > ANOMALY.displacement) {
+            digits.forEach(digit => {
+                if (Math.random() < intensity * 0.05) {
+                    const offsetX = (Math.random() - 0.5) * intensity * 10;
+                    const offsetY = (Math.random() - 0.5) * intensity * 5;
+                    const rot = (Math.random() - 0.5) * intensity * 4;
+                    digit.classList.add('digit-rotate');
+                    digit.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${rot}deg)`;
+                    setTimeout(() => {
+                        digit.classList.remove('digit-rotate');
+                        digit.style.transform = '';
+                    }, 80);
+                }
+            });
+        }
+
+        // Label jitter
+        if (intensity > 0.5) {
+            labels.forEach(label => {
+                if (Math.random() < intensity * 0.1) {
+                    label.classList.add('label-jitter');
+                    setTimeout(() => label.classList.remove('label-jitter'), 60);
+                }
+            });
+        }
+
+        // Container blur
+        if (intensity > ANOMALY.static) {
+            this.container.style.filter = `blur(${intensity * 2}px)`;
+            setTimeout(() => { this.container.style.filter = ''; }, 60);
+        }
+
+        // Body contrast flash at peak anomaly
+        if (intensity > 0.75 && Math.random() < intensity * 0.05) {
+            document.body.classList.add('body-contrast');
+            setTimeout(() => document.body.classList.remove('body-contrast'), 40);
+        }
+
+        // Chromatic aberration glitch overlay
+        this.glitch.style.opacity = intensity > 0.15 ? intensity * 0.6 : 0;
+
+        // Scanline effect
+        this.countdown.style.setProperty(
+            '--scanline-opacity',
+            intensity > ANOMALY.scanline ? intensity * 0.35 : 0
+        );
+
+        // Static noise overlay
+        if (intensity > ANOMALY.static && Math.random() < intensity * 0.15) {
+            this.container.classList.add('static');
+            setTimeout(() => this.container.classList.remove('static'), 40);
+        }
+
+        // Time dilation - wrong values flash briefly
+        if (intensity > ANOMALY.dilation && Math.random() < intensity * 0.05) {
+            const randomUnit = ['days', 'hours', 'minutes', 'seconds'][
+                Math.floor(Math.random() * 4)
+            ];
+            const el = document.getElementById(randomUnit);
+            el.querySelectorAll('.digit').forEach(d => {
+                this.setSegments(d, Math.floor(Math.random() * 10));
+            });
+            setTimeout(() => this.update(), 80);
+        }
     }
 
-    // Label jitter - labels shake as anomaly grows
-    if (intensity > 0.5) {
-        document.querySelectorAll('.label').forEach(label => {
-            if (Math.random() < intensity * 0.1) {
-                label.classList.add('label-jitter');
-                setTimeout(() => label.classList.remove('label-jitter'), 60);
-            }
+    computeUnits(diff) {
+        return {
+            days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+            minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+            seconds: Math.floor((diff % (1000 * 60)) / 1000),
+            milliseconds: diff % 1000
+        };
+    }
+
+    update() {
+        const now = Date.now();
+        const diff = TARGET_DATE - now;
+
+        if (diff <= 0) {
+            this.countdown.innerHTML = '<p style="font-size: 2rem; color: var(--anomaly-color);">Time\'s up!</p>';
+            this.container.classList.add('final');
+            this.isRunning = false;
+            if (this.rafId) cancelAnimationFrame(this.rafId);
+            return;
+        }
+
+        const values = this.computeUnits(diff);
+        this.updateDisplay('days', values.days, 3);
+        this.updateDisplay('hours', values.hours, 2);
+        this.updateDisplay('minutes', values.minutes, 2);
+        this.updateDisplay('seconds', values.seconds, 2);
+        this.updateDisplay('milliseconds', values.milliseconds, 3);
+
+        this.applyAnomalies(this.getAnomalyIntensity(diff));
+    }
+
+    start() {
+        this.update();
+        const loop = () => {
+            this.update();
+            this.rafId = requestAnimationFrame(loop);
+        };
+        this.rafId = requestAnimationFrame(loop);
+
+        window.addEventListener('pagehide', () => {
+            if (this.rafId) cancelAnimationFrame(this.rafId);
         });
     }
-
-    // Container blur - vision blurs under high anomaly
-    if (intensity > ANOMALY_THRESHOLDS.static) {
-        container.style.filter = `blur(${intensity * 2}px)`;
-        setTimeout(() => { container.style.filter = ''; }, 60);
-    }
-
-    // Body contrast flash - brief inversion/contrast spike at peak anomaly
-    if (intensity > 0.75 && Math.random() < intensity * 0.05) {
-        document.body.classList.add('body-contrast');
-        setTimeout(() => document.body.classList.remove('body-contrast'), 40);
-    }
-
-    // Chromatic aberration glitch overlay
-    const glitch = document.querySelector('.glitch');
-    glitch.style.opacity = intensity > 0.2 ? intensity * 0.5 : 0;
-
-    // Scanline effect
-    countdown.style.setProperty('--scanline-opacity', intensity > ANOMALY_THRESHOLDS.scanline ? intensity * 0.3 : 0);
-
-    // Static noise overlay
-    if (intensity > ANOMALY_THRESHOLDS.static && Math.random() < intensity * 0.1) {
-        container.classList.add('static');
-        setTimeout(() => container.classList.remove('static'), 50);
-    }
-
-    // Time dilation - numbers briefly show wrong values
-    if (intensity > ANOMALY_THRESHOLDS.dilation && Math.random() < intensity * 0.03) {
-        const timeUnits = ['days', 'hours', 'minutes', 'seconds'];
-        const randomUnit = timeUnits[Math.floor(Math.random() * timeUnits.length)];
-        const el = document.getElementById(randomUnit);
-        el.querySelectorAll('.digit').forEach(d => {
-            setSegments(d, Math.floor(Math.random() * 10));
-        });
-    }
 }
 
-function computeUnits(diff) {
-    return {
-        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((diff % (1000 * 60)) / 1000),
-        milliseconds: diff % 1000,
-    };
+// Start the timer when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => new CountdownTimer());
+} else {
+    new CountdownTimer();
 }
-
-function updateCountdown() {
-    const now = Date.now();
-    const diff = TARGET_DATE - now;
-
-    if (diff <= 0) {
-        document.getElementById('countdown').innerHTML = '<p style="font-size: 2rem; color: var(--anomaly-color);">Time\'s up!</p>';
-        document.querySelector('.container').classList.add('final');
-        return;
-    }
-
-    const values = computeUnits(diff);
-    updateDisplay('days', values.days, 3);
-    updateDisplay('hours', values.hours, 2);
-    updateDisplay('minutes', values.minutes, 2);
-    updateDisplay('seconds', values.seconds, 2);
-    updateDisplay('milliseconds', values.milliseconds, 3);
-
-    applyAnomalies(getAnomalyIntensity(diff));
-}
-
-let rafId;
-function loop() {
-    updateCountdown();
-    rafId = requestAnimationFrame(loop);
-}
-
-loop();
-
-window.addEventListener('pagehide', () => cancelAnimationFrame(rafId));

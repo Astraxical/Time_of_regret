@@ -5,12 +5,24 @@
 }
 
 :root {
+    --bg-color: #0a0a0a;
+    --panel-bg: #161616;
+    --panel-border: #333;
+    --segment-off: #555;
+    --segment-on: #ff0000;
+    --segment-glow: #ff3333;
     --anomaly-color: #ff0000;
     --anomaly-glow: #ff3333;
     --scanline-opacity: 0;
-    --bg-color: #0a0a0a;
-    --panel-bg: #111;
-    --panel-border: #222;
+    --corruption: 0;
+    --text-color: #e0e0e0;
+    --label-color: #888;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 body {
@@ -20,17 +32,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #fff;
+    color: var(--text-color);
     overflow: hidden;
-    transition: filter 0.1s, background 0.3s;
-}
-
-.body-contrast {
-    filter: contrast(2) brightness(1.4) saturate(1.5);
-}
-
-.body-blur {
-    filter: blur(2px) brightness(0.7);
+    transition: filter 0.15s, background-color 0.3s;
 }
 
 body::before {
@@ -41,7 +45,7 @@ body::before {
     opacity: 0.6;
     pointer-events: none;
     z-index: 0;
-    transition: opacity 0.3s, background 0.3s;
+    transition: background 0.3s, opacity 0.3s;
     animation: breathe 8s ease-in-out infinite;
 }
 
@@ -63,14 +67,16 @@ body::after {
 
 .container {
     position: relative;
-    z-index: 1;
+    z-index: 10;
     text-align: center;
-    padding: 2rem;
-    transition: transform 0.05s ease, box-shadow 0.3s, border-color 0.3s, filter 0.2s;
+    padding: 3rem 2rem;
     border: 1px solid var(--panel-border);
-    border-radius: 12px;
+    border-radius: 16px;
     background: var(--panel-bg);
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+    box-shadow: 
+        0 0 40px rgba(0, 0, 0, 0.8),
+        inset 0 0 20px rgba(255, 255, 255, 0.02);
+    transition: transform 0.05s ease, box-shadow 0.3s, border-color 0.3s, filter 0.2s;
 }
 
 .container::after {
@@ -78,7 +84,7 @@ body::after {
     position: absolute;
     inset: -2px;
     z-index: -1;
-    border-radius: 14px;
+    border-radius: 18px;
     background: linear-gradient(135deg, var(--anomaly-color), transparent, var(--anomaly-color));
     opacity: 0;
     transition: opacity 0.2s;
@@ -89,10 +95,10 @@ body::after {
     content: '';
     position: absolute;
     inset: 0;
-    border-radius: 12px;
+    border-radius: 16px;
     background: linear-gradient(
         to bottom,
-        rgba(255, 255, 255, 0.03),
+        rgba(255, 255, 255, 0.04),
         rgba(255, 255, 255, 0)
     );
     pointer-events: none;
@@ -102,17 +108,17 @@ body::after {
 .container .glitch {
     position: absolute;
     inset: 0;
-    border-radius: 12px;
+    border-radius: 16px;
     pointer-events: none;
-    z-index: 2;
+    z-index: 20;
     opacity: 0;
     transition: opacity 0.1s;
     animation: glitchMove 0.2s infinite;
     background: linear-gradient(
         45deg,
         transparent 45%,
-        rgba(255, 0, 0, 0.15) 45%,
-        rgba(255, 0, 0, 0.15) 55%,
+        rgba(255, 0, 0, 0.2) 45%,
+        rgba(255, 0, 0, 0.2) 55%,
         transparent 55%
     );
     transform: translate3d(0, 0, 0);
@@ -142,7 +148,7 @@ body::after {
     opacity: 0.15;
     pointer-events: none;
     animation: staticNoise 0.1s infinite;
-    z-index: 1000;
+    z-index: 15;
 }
 
 @keyframes staticNoise {
@@ -162,12 +168,14 @@ body::after {
 .container.final {
     animation: finalPulse 0.4s infinite;
     border-color: var(--anomaly-color);
-    box-shadow: 0 0 40px var(--anomaly-glow);
+    box-shadow: 
+        0 0 50px var(--anomaly-glow),
+        inset 0 0 20px rgba(255, 255, 255, 0.02);
 }
 
 @keyframes finalPulse {
-    0%, 100% { filter: hue-rotate(0deg) saturate(1); }
-    50% { filter: hue-rotate(30deg) saturate(2); }
+    0%, 100% { filter: hue-rotate(0deg) saturate(1); opacity: 1; }
+    50% { filter: hue-rotate(30deg) saturate(2); opacity: 0.9; }
 }
 
 .label-jitter {
@@ -192,12 +200,16 @@ body::after {
     75% { transform: rotate(0.5deg); }
 }
 
+body.body-contrast {
+    filter: contrast(2) brightness(1.4) saturate(1.5);
+}
+
 h1 {
-    font-size: 1.5rem;
-    margin-bottom: 2rem;
+    font-size: 1.75rem;
+    margin-bottom: 2.5rem;
     font-weight: 400;
-    letter-spacing: 4px;
-    color: #333;
+    letter-spacing: 6px;
+    color: var(--label-color);
     text-transform: uppercase;
     transition: color 0.3s, text-shadow 0.3s;
 }
@@ -206,7 +218,7 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
     flex-wrap: wrap;
     position: relative;
 }
@@ -224,6 +236,7 @@ h1 {
     );
     pointer-events: none;
     animation: scanlineMove 8s linear infinite;
+    z-index: 1;
 }
 
 @keyframes scanlineMove {
@@ -235,46 +248,53 @@ h1 {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    z-index: 10;
 }
 
 .separator {
-    font-size: 3rem;
+    font-size: 2.75rem;
     color: var(--anomaly-color);
     animation: blink 1s infinite;
     line-height: 1;
-    margin: 0 0.5rem;
+    margin: 0 0.25rem;
     text-shadow: 0 0 10px var(--anomaly-glow), 0 0 20px var(--anomaly-glow);
     transition: color 0.3s, text-shadow 0.3s;
+    z-index: 10;
 }
 
 @keyframes blink {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
+    50% { opacity: 0.35; }
 }
 
 .seven-seg {
     display: flex;
-    gap: 2px;
+    gap: 3px;
+    z-index: 10;
 }
 
 .digit {
     position: relative;
-    width: 50px;
-    height: 90px;
+    width: 48px;
+    height: 88px;
     background: #1a1a1a;
-    border-radius: 8px;
-    padding: 6px;
-    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.1), 0 4px 8px rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    padding: 7px;
+    box-shadow: 
+        inset 0 2px 4px rgba(255, 255, 255, 0.08),
+        0 4px 12px rgba(0, 0, 0, 0.7),
+        inset 0 0 12px rgba(0, 0, 0, 0.6);
     transition: transform 0.1s ease, box-shadow 0.3s, border-color 0.3s;
     border: 1px solid #333;
+    z-index: 10;
 }
 
 .digit::after {
     content: '';
     position: absolute;
     inset: 0;
-    border-radius: 8px;
+    border-radius: 10px;
     pointer-events: none;
     z-index: -1;
     opacity: 0;
@@ -282,13 +302,13 @@ h1 {
 }
 
 .digit.on-glow::after {
-    opacity: 0.6;
+    opacity: 0.7;
     box-shadow: 0 0 15px var(--anomaly-glow), 0 0 30px var(--anomaly-glow);
 }
 
 .segment {
     position: absolute;
-    background: #555;
+    background: var(--segment-off);
     border-radius: 4px;
     transition: background 0.1s, box-shadow 0.1s, opacity 0.1s;
     opacity: 1;
@@ -299,7 +319,10 @@ h1 {
     z-index: 2;
     background: var(--anomaly-color);
     opacity: 1;
-    box-shadow: 0 0 10px var(--anomaly-glow), 0 0 20px var(--anomaly-glow), inset 0 0 10px var(--anomaly-glow);
+    box-shadow: 
+        0 0 8px var(--anomaly-glow),
+        0 0 16px var(--anomaly-glow),
+        inset 0 0 8px var(--anomaly-glow);
 }
 
 .segment.ghost {
@@ -310,41 +333,49 @@ h1 {
     0% {
         background: var(--anomaly-color);
         opacity: 1;
-        box-shadow: 0 0 20px var(--anomaly-glow), 0 0 40px var(--anomaly-glow);
+        box-shadow: 0 0 16px var(--anomaly-glow), 0 0 32px var(--anomaly-glow);
     }
     100% {
-        background: #222;
-        opacity: 0.15;
+        background: var(--segment-off);
+        opacity: 1;
         box-shadow: none;
     }
 }
 
-.segment.a { top: 6px; left: 6px; right: 6px; height: 8px; border-radius: 4px 4px 0 0; }
-.segment.b { top: 6px; right: 6px; width: 8px; height: calc(50% - 10px); border-radius: 0 4px 0 0; }
-.segment.c { bottom: 6px; right: 6px; width: 8px; height: calc(50% - 10px); border-radius: 0 0 4px 0; }
-.segment.d { bottom: 6px; left: 6px; right: 6px; height: 8px; border-radius: 0 0 4px 4px; }
-.segment.e { bottom: 6px; left: 6px; width: 8px; height: calc(50% - 10px); border-radius: 0 0 0 4px; }
-.segment.f { top: 6px; left: 6px; width: 8px; height: calc(50% - 10px); border-radius: 4px 0 0 0; }
-.segment.g { top: calc(50% - 4px); left: 6px; right: 6px; height: 8px; }
+.segment.a { top: 7px; left: 7px; width: 34px; height: 9px; border-radius: 5px 5px 0 0; }
+.segment.b { top: 7px; left: 32px; width: 9px; height: calc(50% - 12px); border-radius: 0 5px 0 0; }
+.segment.c { bottom: 7px; left: 32px; width: 9px; height: calc(50% - 12px); border-radius: 0 0 5px 0; }
+.segment.d { bottom: 7px; left: 7px; width: 34px; height: 9px; border-radius: 0 0 5px 5px; }
+.segment.e { bottom: 7px; left: 7px; width: 9px; height: calc(50% - 12px); border-radius: 0 0 0 5px; }
+.segment.f { top: 7px; left: 7px; width: 9px; height: calc(50% - 12px); border-radius: 5px 0 0 0; }
+.segment.g { top: calc(50% - 4.5px); left: 7px; width: 34px; height: 9px; }
 
 .label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #444;
-    font-weight: 600;
-    transition: color 0.3s;
+    letter-spacing: 2.5px;
+    color: var(--label-color);
+    font-weight: 700;
+    transition: color 0.3s, text-shadow 0.3s, transform 0.1s;
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
+    z-index: 10;
 }
 
 @media (max-width: 600px) {
     .digit {
-        width: 38px;
-        height: 68px;
-        padding: 4px;
+        width: 36px;
+        height: 66px;
+        padding: 5px;
     }
-    .segment { border-radius: 2px; }
-    .segment.a, .segment.d, .segment.g { height: 6px; }
-    .segment.b, .segment.c, .segment.e, .segment.f { width: 6px; }
+    .segment { border-radius: 3px; }
+    .segment.a, .segment.d, .segment.g { height: 7px; }
+    .segment.b, .segment.c, .segment.e, .segment.f { width: 7px; }
     .separator { font-size: 2rem; }
-    h1 { font-size: 1.2rem; }
+    h1 { font-size: 1.4rem; letter-spacing: 4px; margin-bottom: 2rem; }
+    .container { padding: 2rem 1.5rem; border-radius: 12px; }
+.segment.a, .segment.d, .segment.g { left: 5px; width: 26px; }
+.segment.b, .segment.c, .segment.e, .segment.f { top: 5px; }
+.segment.a { top: 5px; }
+.segment.d { bottom: 5px; }
+.segment.g { top: calc(50% - 3.5px); top: 5px; }
 }
