@@ -59,13 +59,16 @@ function initDisplay(id, digitCount) {
 
 function setSegments(digit, num) {
     const active = new Set(SEGMENTS[num]);
+    let anyOn = false;
     digit.querySelectorAll('.segment').forEach(seg => {
         if (active.has(seg.dataset.seg)) {
             seg.classList.add('on');
+            anyOn = true;
         } else {
             seg.classList.remove('on');
         }
     });
+    digit.classList.toggle('on-glow', anyOn);
 }
 
 function updateDisplay(id, value, digitCount) {
@@ -97,6 +100,7 @@ function applyAnomalies(intensity) {
     const lightness = 50 - intensity * 20;
     document.documentElement.style.setProperty('--anomaly-color', `hsl(${hueShift}, 100%, ${lightness}%)`);
     document.documentElement.style.setProperty('--anomaly-glow', `hsl(${hueShift}, 100%, ${lightness + 20}%)`);
+    document.documentElement.style.setProperty('--corruption', intensity);
 
     // Labels shift color with anomaly
     document.querySelectorAll('.label').forEach(label => {
@@ -141,6 +145,10 @@ function applyAnomalies(intensity) {
             }
         });
     }
+
+    // Chromatic aberration glitch overlay
+    const glitch = document.querySelector('.glitch');
+    glitch.style.opacity = intensity > 0.2 ? intensity * 0.5 : 0;
 
     // Scanline effect
     countdown.style.setProperty('--scanline-opacity', intensity > ANOMALY_THRESHOLDS.scanline ? intensity * 0.3 : 0);
