@@ -8,11 +8,14 @@
     --anomaly-color: #ff0000;
     --anomaly-glow: #ff3333;
     --scanline-opacity: 0;
+    --bg-color: #0a0a0a;
+    --panel-bg: #111;
+    --panel-border: #222;
 }
 
 body {
     font-family: 'Courier New', Courier, monospace;
-    background: #0a0a0a;
+    background: var(--bg-color);
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -21,10 +24,27 @@ body {
     overflow: hidden;
 }
 
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center, #1a1a1a 0%, #0a0a0a 70%);
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.3s;
+}
+
 .container {
+    position: relative;
+    z-index: 1;
     text-align: center;
     padding: 2rem;
-    transition: transform 0.05s ease;
+    transition: transform 0.05s ease, box-shadow 0.3s, border-color 0.3s;
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    background: var(--panel-bg);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
 }
 
 .container.static::before {
@@ -56,7 +76,9 @@ body {
 }
 
 .container.final {
-    animation: finalPulse 0.5s infinite;
+    animation: finalPulse 0.4s infinite;
+    border-color: var(--anomaly-color);
+    box-shadow: 0 0 40px var(--anomaly-glow);
 }
 
 @keyframes finalPulse {
@@ -71,7 +93,7 @@ h1 {
     letter-spacing: 4px;
     color: #333;
     text-transform: uppercase;
-    transition: color 0.5s, text-shadow 0.5s;
+    transition: color 0.3s, text-shadow 0.3s;
 }
 
 .countdown {
@@ -86,10 +108,7 @@ h1 {
 .countdown::after {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background: repeating-linear-gradient(
         0deg,
         transparent,
@@ -137,14 +156,12 @@ h1 {
     position: relative;
     width: 50px;
     height: 90px;
-    background: #111;
+    background: var(--panel-bg);
     border-radius: 8px;
     padding: 6px;
-    box-shadow: 
-        inset 0 2px 4px rgba(255, 0, 0, 0.1),
-        0 4px 8px rgba(0, 0, 0, 0.5),
-        0 0 20px rgba(255, 0, 0, 0.1);
-    transition: transform 0.1s ease;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.5);
+    transition: transform 0.1s ease, box-shadow 0.3s, border-color 0.3s;
+    border: 1px solid var(--panel-border);
 }
 
 .segment {
@@ -158,10 +175,7 @@ h1 {
 .segment.on {
     background: var(--anomaly-color);
     opacity: 1;
-    box-shadow: 
-        0 0 10px var(--anomaly-glow),
-        0 0 20px var(--anomaly-glow),
-        inset 0 0 10px var(--anomaly-glow);
+    box-shadow: 0 0 10px var(--anomaly-glow), 0 0 20px var(--anomaly-glow), inset 0 0 10px var(--anomaly-glow);
 }
 
 .segment.ghost {
@@ -169,12 +183,12 @@ h1 {
 }
 
 @keyframes ghostFlash {
-    0% { 
+    0% {
         background: var(--anomaly-color);
         opacity: 1;
         box-shadow: 0 0 20px var(--anomaly-glow), 0 0 40px var(--anomaly-glow);
     }
-    100% { 
+    100% {
         background: #222;
         opacity: 0.15;
         box-shadow: none;
@@ -195,7 +209,7 @@ h1 {
     letter-spacing: 2px;
     color: #444;
     font-weight: 600;
-    transition: color 0.5s;
+    transition: color 0.3s;
 }
 
 @media (max-width: 600px) {
